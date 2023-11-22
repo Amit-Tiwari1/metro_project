@@ -1,0 +1,20 @@
+
+.interchange{
+  align-items: center;
+}
+
+.pinkRoute{
+    text-align: center;
+   
+    margin-top: 5px;
+    font-size: 1.3rem;
+}
+.pink_routeul{
+    font-size: 12px;
+}
+
+.pink_routeul li{
+   display: inline;
+
+  
+}
