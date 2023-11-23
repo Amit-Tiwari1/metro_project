@@ -7,7 +7,7 @@ const jaipurJsonData = [
     station_Name: "Badi Chaupar",
     latitude: "26.9239° N",
     longitude: "75.8316° E",
-    
+
     station_Code: "BACH",
     isJunction: "No",
     route_color: "yellow",
@@ -105,7 +105,7 @@ const jaipurJsonData = [
     latitude: "26.9252° N",
     longitude: "75.8011° E",
     station_Code: "SICA",
-    isJunction: "No",
+    isJunction: "Yes",
     route_color: "yellow",
   },
   {

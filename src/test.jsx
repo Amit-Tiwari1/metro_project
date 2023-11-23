@@ -9,6 +9,8 @@ function MetroRouteFinder() {
   const [endStationRouteId, setEndStationRouteId] = useState(null);
   const [endStation_id, setEndStationId] = useState(null);
   const [betweenStation, setbetweenStation] = useState([]);
+  const [startStationRouteColor, setStartStationRouteColor] = useState("");
+  const [endStationRouteColor, setEndStationRouteColor] = useState("");
   const handleFromChange = (e) => {
     setFromStation(e.target.value);
   };
@@ -20,10 +22,12 @@ function MetroRouteFinder() {
       if (stationData.station_Name === fromStation) {
         setStartStationRouteId(stationData.route_ID);
         setStartStationId(stationData.station_ID);
+        setStartStationRouteColor(stationData.route_color);
       }
       if (stationData.station_Name === toStation) {
         setEndStationRouteId(stationData.route_ID);
         setEndStationId(stationData.station_ID);
+        setEndStationRouteColor(stationData.route_color);
       }
     });
   }, [fromStation, toStation]);
@@ -59,19 +63,53 @@ function MetroRouteFinder() {
         }
       });
     } else {
-      if (
-        startStationRouteId !== null &&
-        endStationRouteId !== null &&
-        startStationRouteId !== endStationRouteId
-      ) {
-        jaipurJsonData.map((item) => {
-          if (item.isJunction === "yes") {
-            console.log("junction ", item.route_ID);
+      console.log("now multiple route needed");
+
+
+
+      const getMultipleRouteStations = [];
+      const allstation = []
+      const multipleRoute = () => {
+        jaipurJsonData.map((item)=>{
+          if (
+            item.station_ID >= startStation_id &&
+            item.station_ID <= endStation_id 
+           )
+           {
+            allstation.push(item); 
+            console.log(allstation);
           }
-        });
-      }
+
+          if (
+            item.station_ID <= startStation_id &&
+            item.station_ID >= endStation_id
+          ) {
+            allstation.push(item);
+            console.log(allstation);
+          }
+
+
+        })
+        for (let i = 0; i < allstation.length; i++) {
+          const stations = allstation[i];
+
+          if (stations.route_ID === startStationRouteId) {
+            getMultipleRouteStations.push(stations.station_Name);
+            console.log("stations getting", stations);
+          } else {
+            console.log("multiple routes station is not pushing");
+          }
+          if (stations.isJunction === "Yes") {
+            break;
+          }
+
+          setbetweenStation(getMultipleRouteStations);
+        }
+      };
+      multipleRoute();
     }
   };
+
   return (
     <>
       <div>
@@ -99,16 +137,20 @@ function MetroRouteFinder() {
         <button onClick={handleGetValue}>Get value</button>
       </div>
       <div>
-        <h2 id="heading" className="ms-3">
+        <h3 id="heading" className="ms-3">
           {`Station between ${fromStation} and ${toStation}`}
-        </h2>
+        </h3>
+        Route Color :- {startStationRouteColor}
         {betweenStation.map((stBetween, index) => (
-          <>
-            <li className="ms-5" key={index}>
-              {stBetween}
-            </li>
-          </>
+          <li className="ms-5" key={index}>
+            {stBetween}
+          </li>
         ))}
+        {/* multiple route section start */}
+        <div className="starting_route">
+          <h4>InterChange from :- {toStation}</h4>
+          <h5>Route Color :- {endStationRouteColor}</h5>
+        </div>
       </div>
     </>
   );
