@@ -1,124 +1,116 @@
 import React, { useState, useEffect } from "react";
 import jaipurJsonData from "./JsonData";
-
 function MetroRouteFinder() {
+  // State variables to store input values and result stations
   const [fromStation, setFromStation] = useState("");
   const [toStation, setToStation] = useState("");
   const [startStationRouteId, setStartStationRouteId] = useState(null);
-  const [startStation_id, setStartStationid] = useState(null);
+  const [startStation_id, setStartStationId] = useState(null);
   const [endStationRouteId, setEndStationRouteId] = useState(null);
-  const [endStation_id, setEndStationid] = useState(null);
-  const [betweenStation, setBetweenStation] = useState([]);
-  const [fromRouteColor, setFromRouteColor] = useState(null);
-  const [toRouteColor, settoRouteColor] = useState(null);
-
+  const [endStation_id, setEndStationId] = useState(null);
+  const [betweenStation, setbetweenStation] = useState([]);
   const handleFromChange = (e) => {
     setFromStation(e.target.value);
   };
-
   const handleToChange = (e) => {
     setToStation(e.target.value);
   };
-
-  const renderDropdownOptions = () => {
-    return jaipurJsonData.map((item, index) => (
-      <option key={index} value={item.station_Name}>
-        {item.station_Name}
-      </option>
-    ));
-  };
-
-  const filterStations = () => {
-    const filteredStations = jaipurJsonData.filter((station) => {
-      return (
-        (station.station_ID >= startStation_id &&
-          station.station_ID <= endStation_id) ||
-        (station.station_ID <= startStation_id &&
-          station.station_ID >= endStation_id)
-      );
+  useEffect(() => {
+    jaipurJsonData.forEach((stationData) => {
+      if (stationData.station_Name === fromStation) {
+        setStartStationRouteId(stationData.route_ID);
+        setStartStationId(stationData.station_ID);
+      }
+      if (stationData.station_Name === toStation) {
+        setEndStationRouteId(stationData.route_ID);
+        setEndStationId(stationData.station_ID);
+      }
     });
-
-    setBetweenStation(
-      filteredStations
-        .map((station) => station.station_Name)
-        .sort(
-          (a, b) =>
-            jaipurJsonData.findIndex((item) => item.station_Name === b) -
-            jaipurJsonData.findIndex((item) => item.station_Name === a)
-        )
-    );
-  };
-
+  }, [fromStation, toStation]);
+  let StationVal = [];
   const handleGetValue = () => {
     if (
       startStationRouteId !== null &&
       endStationRouteId !== null &&
       startStationRouteId === endStationRouteId
     ) {
-      filterStations();
+      jaipurJsonData.map((station) => {
+        if (
+          station.station_ID >= startStation_id &&
+          station.station_ID <= endStation_id
+        ) {
+          // console.log(" station.station_ID", station.station_ID);
+          StationVal.push(station.station_Name);
+          setbetweenStation(StationVal);
+        } else if (
+          station.station_ID <= startStation_id &&
+          station.station_ID >= endStation_id
+        ) {
+          StationVal.push(station.station_Name);
+          // ---------- Sort in descending order based on the index ------------
+          setbetweenStation(
+            StationVal.sort(
+              (a, b) =>
+                jaipurJsonData.findIndex((item) => item.station_Name === b) -
+                jaipurJsonData.findIndex((item) => item.station_Name === a)
+            )
+          );
+          // ------------ end sort ---------
+        }
+      });
     } else {
-      // You can handle route change more gracefully here.
-      console.error("Route Change Here");
+      if (
+        startStationRouteId !== null &&
+        endStationRouteId !== null &&
+        startStationRouteId !== endStationRouteId
+      ) {
+        jaipurJsonData.map((item) => {
+          if (item.isJunction === "yes") {
+            console.log("junction ", item.route_ID);
+          }
+        });
+      }
     }
   };
-
-  useEffect(() => {
-    jaipurJsonData.forEach((stationData) => {
-      if (stationData.station_Name === fromStation) {
-        setStartStationRouteId(stationData.route_ID);
-        setStartStationid(stationData.station_ID);
-        setFromRouteColor(stationData.route_color);
-      }
-
-      if (stationData.station_Name === toStation) {
-        setEndStationRouteId(stationData.route_ID);
-        setEndStationid(stationData.station_ID);
-        settoRouteColor(stationData.route_color);
-      }
-    });
-  }, [fromStation, toStation]);
-
   return (
     <>
       <div>
         <label>From:</label>
         <select onChange={handleFromChange}>
           <option value={"--Select--"}>{"--Select--"}</option>
-          {renderDropdownOptions()}
+          {jaipurJsonData.map((item, index) => (
+            <option key={index} value={item?.station_Name}>
+              {item?.station_Name}
+            </option>
+          ))}
         </select>
       </div>
       <div>
         <label>To:</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <select onChange={handleToChange}>
           <option value="Select">--Select--</option>
-          {renderDropdownOptions()}
-        </select>
+          {jaipurJsonData.map((item, index) => (
+            <option key={index} value={item?.station_Name}>
+              {item?.station_Name}
+            </option>
+          ))}
+        </select>{" "}
         {"  "}
         <button onClick={handleGetValue}>Get value</button>
       </div>
-
       <div>
         <h2 id="heading" className="ms-3">
           {`Station between ${fromStation} and ${toStation}`}
         </h2>
-        <h3>{fromRouteColor} Route</h3>
         {betweenStation.map((stBetween, index) => (
-          <li className="ms-5" key={index}>
-            {stBetween}
-          </li>
+          <>
+            <li className="ms-5" key={index}>
+              {stBetween}
+            </li>
+          </>
         ))}
-      </div>
-      <div>
-        <h2>Route change here -: {}</h2>
-        {/* <h3>{toRouteColor} Route</h3>
-        <h4>start_stationroute Id - {startStationRouteId}</h4>
-        <h4>start station_id- {startStation_id}</h4>
-        <h4>endstation_route_id {endStationRouteId}</h4>
-        <h4>end station id{endStation_id}</h4>
-        <h4> station between{betweenStation}</h4> */}
       </div>
     </>
   );
 }
-
 export default MetroRouteFinder;
