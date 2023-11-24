@@ -4,18 +4,17 @@ import { AllStations } from "../../../slices/StationSlice";
 import { NavLink } from "react-router-dom";
 
 const StationMaster = () => {
-  
   const dispatch = useDispatch();
   useEffect(() => {
     fetchStationdata();
-  },[dispatch]);
-  
+  }, [dispatch]);
+
   const fetchStationdata = async () => {
     const masters = await dispatch(AllStations());
   };
-   const MasterStation = useSelector((state) => state.station.MasterStaions); 
-   console.log("MasterStation", MasterStation);
-     
+  const MasterStation = useSelector((state) => state.station.MasterStaions);
+  console.log("MasterStation", MasterStation);
+
   return (
     <div>
       <div className="container">
@@ -30,9 +29,9 @@ const StationMaster = () => {
                   (station) =>
                     station.name === "Lucknow" ||
                     station.name === "Kochi" ||
-                    station.name === "Jaipur" ||
+                    station.name === "Ahmedabad" ||
                     station.name === "Mumbai" ||
-                    station.name === "Gurgaon"
+                    station.name === "Delhi"
                 ).map((station) => {
                   return (
                     <NavLink

@@ -11,6 +11,7 @@ function MetroRouteFinder() {
   const [betweenStation, setbetweenStation] = useState([]);
   const [startStationRouteColor, setStartStationRouteColor] = useState("");
   const [endStationRouteColor, setEndStationRouteColor] = useState("");
+  const [interChangeStationName, setInterChangeStationName] = useState("");
   const handleFromChange = (e) => {
     setFromStation(e.target.value);
   };
@@ -41,6 +42,7 @@ function MetroRouteFinder() {
       jaipurJsonData.map((station) => {
         if (
           station.station_ID >= startStation_id &&
+          
           station.station_ID <= endStation_id
         ) {
           // console.log(" station.station_ID", station.station_ID);
@@ -65,18 +67,15 @@ function MetroRouteFinder() {
     } else {
       console.log("now multiple route needed");
 
-
-
       const getMultipleRouteStations = [];
-      const allstation = []
+      const allstation = [];
       const multipleRoute = () => {
-        jaipurJsonData.map((item)=>{
+        jaipurJsonData.map((item) => {
           if (
             item.station_ID >= startStation_id &&
-            item.station_ID <= endStation_id 
-           )
-           {
-            allstation.push(item); 
+            item.station_ID <= endStation_id
+          ) {
+            allstation.push(item);
             console.log(allstation);
           }
 
@@ -87,9 +86,7 @@ function MetroRouteFinder() {
             allstation.push(item);
             console.log(allstation);
           }
-
-
-        })
+        });
         for (let i = 0; i < allstation.length; i++) {
           const stations = allstation[i];
 
@@ -100,6 +97,7 @@ function MetroRouteFinder() {
             console.log("multiple routes station is not pushing");
           }
           if (stations.isJunction === "Yes") {
+            setInterChangeStationName(stations.station_Name);
             break;
           }
 
@@ -122,7 +120,6 @@ function MetroRouteFinder() {
             </option>
           ))}
         </select>
-        
       </div>
       <div>
         <label>To:</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -149,7 +146,7 @@ function MetroRouteFinder() {
         ))}
         {/* multiple route section start */}
         <div className="starting_route">
-          <h4>InterChange from :- {toStation}</h4>
+          <h4>InterChange from :- {interChangeStationName}</h4>
           <h5>Route Color :- {endStationRouteColor}</h5>
         </div>
       </div>
