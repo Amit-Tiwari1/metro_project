@@ -2,16 +2,19 @@ import React, { useEffect, useState } from "react";
 import MetroCard from "../Merto_card/MetroCard";
 import { Link, NavLink } from "react-router-dom";
 import Loader from "../../Static/Loader/Loader";
-import { useParams} from "react-router-dom";
+import { useParams } from "react-router-dom";
 import HomeLoader from "../../Static/Loader/HomeLoader";
 import { _getThemeColor } from "../../../config/Config";
 import "./StationOptions.css";
 import { useDispatch, useSelector } from "react-redux";
-import { AllStationOfMasterStation, stationBetween } from "../../../slices/StationSlice";
+import {
+  AllStationOfMasterStation,
+  stationBetween,
+} from "../../../slices/StationSlice";
 import { getFare } from "../../../slices/FareSlice";
 import jaipurJsonData from "../../../JsonData";
-
-
+import { getStartStationRouteId } from "../../../slices/RoutesSlice";
+import { getEndStationRouteId } from "../../../slices/RoutesSlice";
 const StationOptions = () => {
   // console.log("jaipurJsonData", jaipurJsonData);
   const { id, from, to } = useParams();
@@ -30,8 +33,12 @@ const StationOptions = () => {
   const stationBetweenValue = useSelector(
     (state) => state.station.StationBetween
   );
+  const fromRouteIdData = useSelector((state) => state.routes.Startingroute);
+  console.log("fromRouteIdData", fromRouteIdData);
+  const endRouteIdData = useSelector((state) => state.routes.EndingRoute);
+  console.log("endRouteIdData", endRouteIdData);
 
-  console.log("stationBetween", stationBetweenValue);
+  // console.log("stationBetween", stationBetweenValue);
   // -----------(end)-------------------------------->
 
   // -------- get color ---------------
@@ -51,14 +58,22 @@ const StationOptions = () => {
   /* --------getfare call funtion  ---------------------------------------------------*/
   const fareValue = async (from, to) => {
     const fare = dispatch(getFare({ from, to }));
-    
   };
   /* -------- station between  call funtion  ---------------------------------------------------*/
   const stationBitween = async (from, to) => {
     const bitween = dispatch(stationBetween({ from, to }));
-
   };
- 
+
+  // call getStartStationRouteId data
+  const fromvalue = stationOption.From;
+  useEffect(() => {
+    dispatch(getStartStationRouteId({ from: fromvalue, id: id }));
+  }, [fromvalue]);
+  // call getEndStationRouteId data
+  const endvalue = stationOption.To;
+  useEffect(() => {
+    dispatch(getEndStationRouteId({ to: endvalue, id: id }));
+  }, [endvalue]);
 
   const GetAllData = () => {
     const cleanFromStation = from
@@ -73,19 +88,18 @@ const StationOptions = () => {
     SetShow(true);
   };
 
-//  -------- call AllStationOfMasterStation method  -----------
+  //  -------- call AllStationOfMasterStation method  -----------
   useEffect(() => {
     dispatch(AllStationOfMasterStation(id));
   }, []);
-  
+
   const allstatonOfMaster = useSelector(
     (state) => state.station.AllStationMstr
   );
 
-   if (allstatonOfMaster === null || allstatonOfMaster.length === 0) {
-     return <HomeLoader />;
-   }
-
+  if (allstatonOfMaster === null || allstatonOfMaster.length === 0) {
+    return <HomeLoader />;
+  }
 
   /* -------- For from Station ---------------------------------------------------*/
   const handleStationChange = (e) => {
@@ -103,8 +117,8 @@ const StationOptions = () => {
       To: newToValue,
     }));
   };
- 
- const getStationName = JSON.parse(localStorage.getItem("Station_Name")).name;
+
+  const getStationName = JSON.parse(localStorage.getItem("Station_Name")).name;
   return (
     <>
       <div className="container">

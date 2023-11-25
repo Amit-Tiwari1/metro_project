@@ -1,59 +1,82 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
 
-// create action
-export const createUser = createAsyncThunk(
-  "createUser",
-  async (data, { rejectWithValue }) => {
-    const response = await fetch(
-      "https://65435af301b5e279de2037dc.mockapi.io/crud",
-      {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify(data),
-      }
-    );
+// get route
+
+export const getStartStationRouteId = createAsyncThunk(
+  "getStartStationRouteId",
+  async ({ from, id }, thunkAPI) => {
     try {
-      const result = await response.json();
-      return result;
+      const response = await axios.get(
+        `http://localhost:56899/api/Station/GetRouteId?startStation=${from}&metroId=${id}`
+      );
+      return response.data;
     } catch (error) {
-      return rejectWithValue(error);
+      console.log("startStation api call error: RouterSlice", error);
+      return thunkAPI.rejectWithValue(error.response.data); // Store only the relevant error information
     }
   }
 );
 
+// end
+
+export const getEndStationRouteId = createAsyncThunk(
+  "getEndStationRouteId",
+  async ({ to, id }, thunkAPI) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:56899/api/Station/V2_GetEndRoute_Id?endStation=${to}&metroId=${id}`
+      );
+      return response.data;
+    } catch (error) {
+      console.log("endStation api call error: RouterSlice", error);
+      return thunkAPI.rejectWithValue(error.response.data);
+    }
+  }
+);
 
 export const RoutesSlice = createSlice({
-  name: "metroDetails",
+  name: "Routeslicer",
   initialState: {
-    users: [],
+    Startingroute: [],
+    EndingRoute: [],
     loading: false,
     error: null,
-    searchData :[],
+    searchData: [],
   },
-  reducers:{
-    searchUser : (state,action) => {
-    state.searchData = action.payload
-    }
+  reducers: {
+    searchUser: (state, action) => {
+      state.searchData = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
-      // for  =create
-      .addCase(createUser.pending, (state) => {
+      // for  getStartStationRouteId
+      .addCase(getStartStationRouteId.pending, (state) => {
         state.loading = true;
       })
-      .addCase(createUser.fulfilled, (state, action) => {
+      .addCase(getStartStationRouteId.fulfilled, (state, action) => {
         state.loading = false;
-        state.users.push(action.payload);
+        state.Startingroute.push(action.payload);
       })
-      .addCase(createUser.rejected, (state, action) => {
+      .addCase(getStartStationRouteId.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      ;
+      // for  getEndStationRouteId
+      .addCase(getEndStationRouteId.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getEndStationRouteId.fulfilled, (state, action) => {
+        state.loading = false;
+        state.EndingRoute.push(action.payload);
+      })
+      .addCase(getEndStationRouteId.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 
 export default RoutesSlice.reducer;
-export const {searchUser} = RoutesSlice.actions;
+export const { searchUser } = RoutesSlice.actions;
