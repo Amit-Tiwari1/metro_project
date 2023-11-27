@@ -6,6 +6,7 @@ import axios from "axios";
 export const getStartStationRouteId = createAsyncThunk(
   "getStartStationRouteId",
   async ({ from, id }, thunkAPI) => {
+    // console.log("from", from);
     try {
       const response = await axios.get(
         `http://localhost:56899/api/Station/GetRouteId?startStation=${from}&metroId=${id}`
@@ -23,6 +24,7 @@ export const getStartStationRouteId = createAsyncThunk(
 export const getEndStationRouteId = createAsyncThunk(
   "getEndStationRouteId",
   async ({ to, id }, thunkAPI) => {
+    // console.log("to", to);
     try {
       const response = await axios.get(
         `http://localhost:56899/api/Station/V2_GetEndRoute_Id?endStation=${to}&metroId=${id}`
