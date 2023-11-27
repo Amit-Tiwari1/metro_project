@@ -12,11 +12,10 @@ import {
   stationBetween,
 } from "../../../slices/StationSlice";
 import { getFare } from "../../../slices/FareSlice";
-
-import { getStartStationRouteId } from "../../../slices/RoutesSlice";
-import { getEndStationRouteId } from "../../../slices/RoutesSlice";
+import { Localsrouteapi, Localerouteapi } from "../../../config/Config";
 
 const StationOptions = () => {
+  // console.log("jaipurJsonData", jaipurJsonData);
   const { id, from, to } = useParams();
   const dispatch = useDispatch();
   const [stationOption, setStationOption] = useState({
@@ -27,18 +26,66 @@ const StationOptions = () => {
   const [ParamFromStation, setParamFromStation] = useState();
   const [ParamToStation, setParamToStation] = useState();
   const [themColors, setThemColors] = useState(null);
-  // ------ get routedata from redux (start) ------------>
+  const [startRouteid, setStartRouteId] = useState(null);
+  const [endRouteid, setEndRouteId] = useState(null);
+  const [startRoute_id, setStartRoute_id] = useState(null);
+  const [endRoute_id, setEndRoute_id] = useState(null);
+  const [startSerialNum, setStartSerialNum] = useState(null);
+  const [endSerialNum, setEndSerialNum] = useState(null);
+  const [stationBitweenSummary, setStationBetweenSummary] = useState([]);
+
+  // ------ get data from redux (start) ------------>
   const fareloading = useSelector((state) => state.fare.loading);
   const Fare = useSelector((state) => state.fare.fare);
   const stationBetweenValue = useSelector(
     (state) => state.station.StationBetween
   );
-  const fromRouteIdData = useSelector((state) => state.routes.Startingroute);
-  const startRouteId = fromRouteIdData[0][0].route_Id;
-  console.log("startRouteId", startRouteId);
-  const endRouteIdData = useSelector((state) => state.routes.EndingRoute);
-  const endRouteId = endRouteIdData[0][0].route_Id;
-  console.log("endRouteId", endRouteId);
+  // api calling to get route
+
+  const fromval = stationOption.From;
+  const endval = stationOption.To;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          `${Localsrouteapi}${fromval}&metroId=${id}`
+        );
+        const response2 = await fetch(
+          `${Localerouteapi}${endval}&metroId=${id}`
+        );
+        const result = await response.json();
+        setStartRouteId(result);
+        const result2 = await response2.json();
+        setEndRouteId(result2);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, [fromval, endval]);
+
+  const getDataFromSecond = () => {
+    if (startRouteid !== null && startRouteid.length > 0) {
+      setStartRoute_id(startRouteid[0]?.route_Id); // Added nullish coalescing
+      setStartSerialNum(startRouteid[0]?.sno);
+      console.log("startSerialNum", startSerialNum);
+    }
+
+    if (endRouteid !== null && endRouteid.length > 0) {
+      setEndRoute_id(endRouteid[0]?.route_Id); // Added nullish coalescing
+      setEndSerialNum(endRouteid[0]?.sno);
+      console.log("endSerialNum", endSerialNum);
+    }
+  };
+
+  // useEffect(() => {
+
+  // }, [startRouteid, endRouteid]);
+
+  // console.log("startRouteid", startRouteid);
+  // console.log("endRouteid", endRouteid);
 
   // console.log("stationBetween", stationBetweenValue);
   // -----------(end)-------------------------------->
@@ -53,32 +100,65 @@ const StationOptions = () => {
   }, []);
 
   /* -------- Call GetAllData ---------------------------------------------------*/
- useEffect(() => {
-   from && GetAllData();
- }, [from, to, GetAllData]);
-
+  useEffect(() => {
+    from && GetAllData();
+  }, [from, to]);
 
   /* --------getfare call funtion  ---------------------------------------------------*/
   const fareValue = async (from, to) => {
-    dispatch(getFare({ from, to }));
+    const fare = dispatch(getFare({ from, to }));
   };
   /* -------- station between  call funtion  ---------------------------------------------------*/
   const stationBitween = async (from, to) => {
-    dispatch(stationBetween({ from, to }));
+    const bitween = dispatch(stationBetween({ from, to }));
   };
 
-  // call getStartStationRouteId data
-  const fromvalue = stationOption.From;
- useEffect(() => {
-   dispatch(getStartStationRouteId({ from: fromvalue, id: id }));
- }, [dispatch, fromvalue, id]);
+  // *************************
+  // ================== start here second route method   ----------------
+  const StationVal = [];
+  useEffect(() => {
+    if (
+      startRoute_id !== null &&
+      endRoute_id !== null &&
+      startRoute_id === endRoute_id
+    ) {
+      {
+        allstatonOfMaster.map((station) => {
+          if (station.sno >= startSerialNum && station.sno <= endSerialNum) {
+            // console.log(" station.station_ID", station.station_ID);
+            StationVal.push(station.station_Name);
+            setStationBetweenSummary(StationVal);
+          } else if (
+            station.sno <= startSerialNum &&
+            station.sno >= endSerialNum
+          ) {
+            StationVal.push(station.station_Name);
+            // ---------- Sort in descending order based on the index ------------
+            setStationBetweenSummary(
+              StationVal.sort(
+                (a, b) =>
+                  allstatonOfMaster.findIndex(
+                    (item) => item.station_Name === b
+                  ) -
+                  allstatonOfMaster.findIndex((item) => item.station_Name === a)
+              )
+            );
+            // ------------ end sort ---------
+          }
+        });
+      }
+    } else {
+      if (
+        startRoute_id !== null &&
+        endRoute_id !== null &&
+        startRoute_id !== endRoute_id
+      ) {
+        alert(" Start Second route ");
+      }
+    }
+  }, [from, to]);
 
-  // call getEndStationRouteId data
-  const endvalue = stationOption.To;
- useEffect(() => {
-   dispatch(getEndStationRouteId({ to: endvalue, id: id }));
- }, [dispatch, endvalue, id]);
-
+  //****************** */
 
   const GetAllData = () => {
     const cleanFromStation = from
@@ -96,7 +176,7 @@ const StationOptions = () => {
   //  -------- call AllStationOfMasterStation method  -----------
   useEffect(() => {
     dispatch(AllStationOfMasterStation(id));
-  });
+  }, []);
 
   const allstatonOfMaster = useSelector(
     (state) => state.station.AllStationMstr
@@ -125,7 +205,6 @@ const StationOptions = () => {
 
   const getStationName = JSON.parse(localStorage.getItem("Station_Name")).name;
 
-  // check condition according to route id
 
   return (
     <>
@@ -196,6 +275,7 @@ const StationOptions = () => {
                 getStationName
               ).replace(/%20/g, "-")}`}
               className="btn btn-outline-danger float-end text-warning"
+              onClick={getDataFromSecond}
             >
               Get Fare
             </Link>
@@ -291,7 +371,7 @@ const StationOptions = () => {
                           </div>
 
                           {/* route image */}
-                          {stationBetweenValue.map((items, index) => {
+                          {stationBitweenSummary.map((items, index) => {
                             return (
                               <div
                                 key={index}
@@ -320,7 +400,7 @@ const StationOptions = () => {
                         </div>
                         {/* all station from start to end  */}
                         <div className=" col-md-6 col-9">
-                          {stationBetweenValue.map((items, index) => {
+                          {stationBitweenSummary.map((items, index) => {
                             return (
                               <h6 className="p-2 text-white" key={index}>
                                 <i className="bi bi-train-front"></i>
@@ -334,7 +414,7 @@ const StationOptions = () => {
                                       )
                                     }
                                   >
-                                    {items.station_Name}
+                                    {items}
                                   </span>
                                 </NavLink>
                               </h6>
